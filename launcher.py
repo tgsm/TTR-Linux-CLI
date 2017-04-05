@@ -100,7 +100,7 @@ elif response["success"] == "partial":
 		os.exit()
 
 elif response["success"] == "delayed":
-	print("Game enterance delayed, trying to enter...")
+	print("Game enterance delayed, trying to enter.")
 	delay(response["queueToken"])
 
 elif response["success"] == "true":
