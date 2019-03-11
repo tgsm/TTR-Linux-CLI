@@ -1,0 +1,13 @@
+# game-generated directories
+logs/
+screenshots/
+street-signs/
+
+# game files
+Launcher
+*.mf
+TTREngine
+TTRGame.vlt
+
+# user settings
+settings.json

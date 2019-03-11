@@ -78,7 +78,9 @@ def delay(token):
             os._exit(0)
 
 if __name__ == "__main__":
+    print("ttr-linux-cli by reindeer-cafe, tgsm\n")
     check_for_updates()
+    print("game is up to date!\n")
 
     if not sys.argv[1] or not sys.argv[2]:
         print("You need to supply a username and password!")
