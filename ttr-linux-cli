@@ -9,6 +9,10 @@ import sys
 import subprocess
 import stat
 
+PATCH_MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
+CONTENT_MIRROR = 'https://s3.amazonaws.com/download.toontownrewritten.com/patches/'
+HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
+
 def hashFile(filename):
     BLOCKSIZE = 65536
     hasher = hashlib.sha1()
@@ -25,7 +29,7 @@ def updateFile(filename, manifest):
             print(filename + " is up to date, skipping...")
         else:
             print("Downloading updated " + filename + "...")
-            file = requests.get('https://cdn.toontownrewritten.com/content/' + manifest[filename]["dl"])
+            file = requests.get(CONTENT_MIRROR + manifest[filename]["dl"], headers=HEADERS)
             with open(filename + '.bz2', 'wb') as zipped:
                 zipped.write(file.content)
             with open(filename, 'wb') as newfile, open(filename + '.bz2', 'rb') as zipped:
@@ -33,7 +37,7 @@ def updateFile(filename, manifest):
             os.remove(filename + ".bz2")
     else:
         print(filename + " doesn't exist, downloading...")
-        file = requests.get('https://cdn.toontownrewritten.com/content/' + manifest[filename]["dl"])
+        file = requests.get(CONTENT_MIRROR + manifest[filename]["dl"], headers=HEADERS)
         with open(filename + '.bz2', 'wb') as zipped:
             zipped.write(file.content)
         with open(filename, 'wb') as newfile, open(filename + '.bz2', 'rb') as zipped:
@@ -41,7 +45,7 @@ def updateFile(filename, manifest):
         os.remove(filename + ".bz2")
 
 def checkForUpdates():
-    manifest = requests.get('https://cdn.toontownrewritten.com/content/patchmanifest.txt').json()
+    manifest = requests.get(PATCH_MANIFEST, headers=HEADERS).json()
     print("Checking for updates...")
     files = ["TTREngine", "phase_10.mf", "phase_5.mf", "phase_6.mf", "phase_8.mf", "phase_5.5.mf",
     "phase_13.mf", "phase_12.mf", "winter.mf", "phase_3.mf", "phase_3.5.mf", "phase_11.mf",
@@ -63,34 +67,34 @@ def delay(token):
     while delayed:
         time.sleep(15)
         print("Still trying...")
-        response = requests.post('https://www.toontownrewritten.com/api/login?format=json', params=params).json()
+        response = requests.post('https://www.toontownrewritten.com/api/login?format=json', params=params, headers=HEADERS).json()
         if response["success"] == "true":
             launch(response["cookie"], response["gameserver"])
             delayed = 0
         else:
             print(response["banner"])
-            os.exit()
+            os._exit(0)
 
 checkForUpdates()
 
 if not sys.argv[1] or not sys.argv[2]:
     print("You need to supply a username and password!")
-    os.exit()
+    os._exit(0)
 
 params = {'username': sys.argv[1], 'password': sys.argv[2]}
 
-response = requests.post('https://www.toontownrewritten.com/api/login?format=json', params=params).json()
+response = requests.post('https://www.toontownrewritten.com/api/login?format=json', params=params, headers=HEADERS).json()
 
 if response["success"] == "false":
     print(response["banner"])
-    os.exit()
+    os._exit(0)
 
 elif response["success"] == "partial":
     print("Enter the ToonGuard code emailed to you.")
     guard = input("> ")
     params['appToken'] = guard
     params['authToken'] = response["responseToken"]
-    response = requests.post('https://www.toontownrewritten.com/api/login?format=json', params=params).json()
+    response = requests.post('https://www.toontownrewritten.com/api/login?format=json', params=params, headers=HEADERS).json()
 
     if response["success"] == "true":
         launch(response["cookie"], response["gameserver"])
@@ -98,7 +102,7 @@ elif response["success"] == "partial":
         delay(response["queueToken"])
     else:
         print(response["banner"])
-        os.exit()
+        os._exit(0)
 
 elif response["success"] == "delayed":
     print("Game enterance delayed, trying to enter.")
