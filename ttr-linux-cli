@@ -47,9 +47,10 @@ def updateFile(filename, manifest):
 def checkForUpdates():
     manifest = requests.get(PATCH_MANIFEST, headers=HEADERS).json()
     print("Checking for updates...")
-    files = ["TTREngine", "phase_10.mf", "phase_5.mf", "phase_6.mf", "phase_8.mf", "phase_5.5.mf",
-    "phase_13.mf", "phase_12.mf", "winter.mf", "phase_3.mf", "phase_3.5.mf", "phase_11.mf",
-    "phase_7.mf", "phase_9.mf", "TTRGame.vlt", "phase_4.mf"]
+    files = ['phase_13.mf', 'phase_7.mf', 'phase_5.5.mf', 'winter_decorations.mf',
+             'phase_3.mf', 'phase_10.mf', 'phase_6.mf', 'phase_9.mf', 'TTRGame.vlt',
+             'winter_snow.mf', 'phase_5.mf', 'phase_3.5.mf', 'phase_8.mf', 'phase_11.mf',
+             'phase_12.mf', 'phase_4.mf', 'TTREngine', 'winter_music.mf']
 
     for file in files:
         updateFile(file, manifest)
