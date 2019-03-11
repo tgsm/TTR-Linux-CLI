@@ -2,7 +2,6 @@
 
 import requests
 import hashlib
-import os.path
 import os
 import bz2
 import time
