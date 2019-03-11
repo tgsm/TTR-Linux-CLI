@@ -1,14 +1,14 @@
 #!/bin/python3
 
-import requests
+import bz2
+from getpass import getpass
 import hashlib
 import os
-import bz2
-import time
+import requests
 import sys
 import subprocess
 import stat
-from getpass import getpass
+import time
 
 PATCH_MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
 CONTENT_MIRROR = 'https://s3.amazonaws.com/download.toontownrewritten.com/patches/'
@@ -47,8 +47,10 @@ def update_file(filename, manifest):
         os.remove(filename + ".bz2")
 
 def check_for_updates():
-    print("checking for updates...")
+    print("checking for game updates...")
+
     manifest = requests.get(PATCH_MANIFEST, headers=HEADERS).json()
+
     files = ['phase_13.mf', 'phase_7.mf', 'phase_5.5.mf', 'winter_decorations.mf',
              'phase_3.mf', 'phase_10.mf', 'phase_6.mf', 'phase_9.mf', 'TTRGame.vlt',
              'winter_snow.mf', 'phase_5.mf', 'phase_3.5.mf', 'phase_8.mf', 'phase_11.mf',
