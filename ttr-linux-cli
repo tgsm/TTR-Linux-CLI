@@ -4,6 +4,7 @@ import bz2
 from getpass import getpass
 import hashlib
 import os
+import platform
 import requests
 import sys
 import subprocess
@@ -51,10 +52,14 @@ def check_for_updates():
 
     manifest = requests.get(PATCH_MANIFEST, headers=HEADERS).json()
 
-    files = ['phase_13.mf', 'phase_7.mf', 'phase_5.5.mf', 'winter_decorations.mf',
-             'phase_3.mf', 'phase_10.mf', 'phase_6.mf', 'phase_9.mf', 'TTRGame.vlt',
-             'winter_snow.mf', 'phase_5.mf', 'phase_3.5.mf', 'phase_8.mf', 'phase_11.mf',
-             'phase_12.mf', 'phase_4.mf', 'TTREngine', 'winter_music.mf']
+    if platform.system() == 'Linux':
+        files = ['phase_13.mf', 'phase_7.mf', 'phase_5.5.mf', 'winter_decorations.mf',
+                 'phase_3.mf', 'phase_10.mf', 'phase_6.mf', 'phase_9.mf', 'TTRGame.vlt',
+                 'winter_snow.mf', 'phase_5.mf', 'phase_3.5.mf', 'phase_8.mf', 'phase_11.mf',
+                 'phase_12.mf', 'phase_4.mf', 'TTREngine', 'winter_music.mf']
+    else:
+        print("\nunsupported platform :(")
+        os._exit(0)
 
     for file in files:
         update_file(file, manifest)
