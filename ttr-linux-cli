@@ -8,6 +8,7 @@ import time
 import sys
 import subprocess
 import stat
+from getpass import getpass
 
 PATCH_MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
 CONTENT_MIRROR = 'https://s3.amazonaws.com/download.toontownrewritten.com/patches/'
@@ -46,8 +47,8 @@ def update_file(filename, manifest):
         os.remove(filename + ".bz2")
 
 def check_for_updates():
+    print("checking for updates...")
     manifest = requests.get(PATCH_MANIFEST, headers=HEADERS).json()
-    print("Checking for updates...")
     files = ['phase_13.mf', 'phase_7.mf', 'phase_5.5.mf', 'winter_decorations.mf',
              'phase_3.mf', 'phase_10.mf', 'phase_6.mf', 'phase_9.mf', 'TTRGame.vlt',
              'winter_snow.mf', 'phase_5.mf', 'phase_3.5.mf', 'phase_8.mf', 'phase_11.mf',
@@ -58,13 +59,48 @@ def check_for_updates():
 
     os.chmod('TTREngine', os.stat('TTREngine').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
+def login():
+    params = {'username': username, 'password': password}
+
+    response = requests.post(LOGIN_API, params=params, headers=HEADERS).json()
+
+    if response["success"] == "false":
+        print("login failed: {}".format(response["banner"]))
+        os._exit(0)
+
+    elif response["success"] == "delayed":
+        print("game entrance delay detected")
+        print("the server should have you ready to go in {} seconds.".format(response["eta"]))
+        delay(response["queueToken"])
+
+    elif response["success"] == "partial":
+        print("enter the ToonGuard code that was just emailed to you.")
+        guard = input("> ")
+        params['appToken'] = guard
+        params['authToken'] = response['responseToken']
+        response = requests.post(LOGIN_API, params=params, headers=HEADERS).json()
+
+        if response["success"] == "true":
+            launch(response["cookie"], response["gameserver"])
+        elif response["success"] == "delayed":
+            print("game entrance delay detected")
+            print("the server should have you ready to go in {} seconds.".format(response["eta"]))
+            delay(response["queueToken"])
+        else:
+            print("login failed: {}".format(response["banner"]))
+            os._exit(0)
+
+    elif response["success"] == "true":
+        launch(response["cookie"], response["gameserver"])
+
 def launch(cookie, server):
+    print("you're good to go. launching the game...")
     os.environ['TTR_PLAYCOOKIE'] = cookie
     os.environ['TTR_GAMESERVER'] = server
-    subprocess.Popen('./TTREngine')
+    subprocess.call('./TTREngine')
 
 def delay(token):
-    params = {'username': sys.argv[1], 'password': sys.argv[2], 'queueToken': token}
+    params = {'username': username, 'password': password, 'queueToken': token}
     delayed = True
     while delayed:
         time.sleep(2)
@@ -74,7 +110,7 @@ def delay(token):
             launch(response["cookie"], response["gameserver"])
             delayed = False
         else:
-            print(response["banner"])
+            print("launch failed: {}".format(response["banner"]))
             os._exit(0)
 
 if __name__ == "__main__":
@@ -82,36 +118,11 @@ if __name__ == "__main__":
     check_for_updates()
     print("game is up to date!\n")
 
-    if not sys.argv[1] or not sys.argv[2]:
-        print("You need to supply a username and password!")
-        os._exit(0)
+    if len(sys.argv) < 3:
+        username = input("username: ")
+        password = getpass("password: ")
+    else:
+        username = sys.argv[1]
+        password = sys.argv[2]
 
-    params = {'username': sys.argv[1], 'password': sys.argv[2]}
-
-    response = requests.post(LOGIN_API, params=params, headers=HEADERS).json()
-
-    if response["success"] == "false":
-        print(response["banner"])
-        os._exit(0)
-
-    elif response["success"] == "partial":
-        print("enter the ToonGuard code that was just emailed to you.")
-        guard = input("> ")
-        params['appToken'] = guard
-        params['authToken'] = response["responseToken"]
-        response = requests.post(LOGIN_API, params=params, headers=HEADERS).json()
-
-        if response["success"] == "true":
-            launch(response["cookie"], response["gameserver"])
-        elif response["success"] == "delayed":
-            delay(response["queueToken"])
-        else:
-            print(response["banner"])
-            os._exit(0)
-
-    elif response["success"] == "delayed":
-        print("game entrance delay detected")
-        delay(response["queueToken"])
-
-    elif response["success"] == "true":
-        launch(response["cookie"], response["gameserver"])
+    login()
