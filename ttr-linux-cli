@@ -16,6 +16,19 @@ CONTENT_MIRROR = 'https://s3.amazonaws.com/download.toontownrewritten.com/patche
 LOGIN_API = 'https://www.toontownrewritten.com/api/login?format=json'
 HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
 
+OPTION_ENABLE_LOGGING = False
+OPTION_USERNAME = None
+OPTION_PASSWORD = None
+
+def display_help():
+    print("usage: {} [-l|--enable-logging] [-u|--username username] [-p|--password password]".format(sys.argv[0]))
+    print("\t-l, --enable-logging  Allows the game to print log output to the console.")
+    print("")
+    print("\t-u, --username        Your account username. Requires -p/--password to be used.")
+    print("\t-p, --password        Your account password. Requires -u/--username to be used.")
+    print("")
+    print("\t-h, --help            Displays this help message and exits.")
+
 def get_sha1_hash(filename):
     BLOCK_SIZE = 65536
     hasher = hashlib.sha1()
@@ -106,7 +119,11 @@ def launch(cookie, server):
     print("you're good to go. launching the game...")
     os.environ['TTR_PLAYCOOKIE'] = cookie
     os.environ['TTR_GAMESERVER'] = server
-    subprocess.call('./TTREngine')
+
+    if OPTION_ENABLE_LOGGING:
+        subprocess.call('./TTREngine')
+    else:
+        subprocess.call('./TTREngine', stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
 def delay(token):
     params = {'username': username, 'password': password, 'queueToken': token}
@@ -124,14 +141,41 @@ def delay(token):
 
 if __name__ == "__main__":
     print("ttr-linux-cli by reindeer-cafe, tgsm\n")
+
+    # arg parsing
+    for i in range(len(sys.argv)):
+        # Displays usage information and exits
+        if sys.argv[i] == "-h" or sys.argv[i] == "--help":
+            display_help()
+            os._exit(0)
+
+        elif sys.argv[i] == "-u" or sys.argv[i] == "--username":
+            try:
+                OPTION_USERNAME = sys.argv[i + 1]
+            except IndexError:
+                print("error: -u/--username was passed, but no actual username was given.\n")
+                display_help()
+                os._exit(0)
+
+        elif sys.argv[i] == "-p" or sys.argv[i] == "--password":
+            try:
+                OPTION_PASSWORD = sys.argv[i + 1]
+            except IndexError:
+                print("error: -p/--password was passed, but no actual password was given.\n")
+                display_help()
+                os._exit(0)
+
+        elif sys.argv[i] == "-l" or sys.argv[i] == "--enable-logging":
+            OPTION_ENABLE_LOGGING = True
+
     check_for_updates()
     print("game is up to date!\n")
 
-    if len(sys.argv) < 3:
+    if not OPTION_USERNAME and not OPTION_PASSWORD:
         username = input("username: ")
         password = getpass("password: ")
     else:
-        username = sys.argv[1]
-        password = sys.argv[2]
+        username = OPTION_USERNAME
+        password = OPTION_PASSWORD
 
     login()
