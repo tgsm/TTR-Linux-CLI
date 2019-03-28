@@ -125,6 +125,8 @@ def launch(cookie, server):
     else:
         subprocess.call('./TTREngine', stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
+    print("game closed, exiting the launcher...")
+
 def delay(token):
     params = {'username': username, 'password': password, 'queueToken': token}
     delayed = True
