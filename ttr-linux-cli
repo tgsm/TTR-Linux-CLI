@@ -67,10 +67,10 @@ def check_for_updates():
 
     operating_system = platform.system()
     if operating_system == 'Linux':
-        files = ['phase_3.mf', 'phase_3.5.mf', 'phase_4.mf', 'phase_5.mf',
-                 'phase_5.5.mf', 'phase_6.mf', 'phase_7.mf', 'phase_8.mf',
-                 'phase_9.mf', 'phase_10.mf', 'phase_11.mf', 'phase_12.mf',
-                 'phase_13.mf', 'TTREngine', 'TTRGame.vlt',
+        files = ['libopenal.so.1', 'phase_3.mf', 'phase_3.5.mf', 'phase_4.mf',
+                 'phase_5.mf', 'phase_5.5.mf', 'phase_6.mf', 'phase_7.mf',
+                 'phase_8.mf', 'phase_9.mf', 'phase_10.mf', 'phase_11.mf',
+                 'phase_12.mf', 'phase_13.mf', 'TTREngine', 'TTRGame.vlt',
                  'winter_decorations.mf', 'winter_music.mf', 'winter_snow.mf']
     else:
         print("\n{} is unsupported :(".format(operating_system))
