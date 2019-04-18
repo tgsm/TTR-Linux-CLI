@@ -8,6 +8,7 @@ Launcher
 *.mf
 TTREngine
 TTRGame.vlt
+libopenal.so.1
 
 # user settings
 settings.json
