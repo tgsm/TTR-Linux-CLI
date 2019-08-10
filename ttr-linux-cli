@@ -14,6 +14,7 @@ import time
 PATCH_MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
 CONTENT_MIRROR = 'https://s3.amazonaws.com/download.toontownrewritten.com/patches/'
 LOGIN_API = 'https://www.toontownrewritten.com/api/login?format=json'
+RELEASE_NOTES_API = 'https://www.toontownrewritten.com/api/releasenotes?format=json'
 HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
 
 OPTION_ENABLE_LOGGING = False
@@ -28,6 +29,16 @@ def display_help():
     print("\t-p, --password        Your account password. Requires -u/--username to be used.")
     print("")
     print("\t-h, --help            Displays this help message and exits.")
+
+def get_latest_game_version():
+    request = requests.get(RELEASE_NOTES_API, headers=HEADERS)
+    if request.status_code != 200:
+        # couldn't successfully connect to the API
+        return None
+
+    release_list = request.json()
+    latest_version = release_list[0]["slug"]
+    return latest_version
 
 def get_sha1_hash(filename):
     BLOCK_SIZE = 65536
@@ -62,6 +73,10 @@ def update_file(filename, manifest):
 
 def check_for_updates():
     print("checking for game updates...")
+
+    latest_version = get_latest_game_version()
+    if latest_version != None:
+        print("latest game version is {}".format(latest_version))
 
     manifest = requests.get(PATCH_MANIFEST, headers=HEADERS).json()
 
