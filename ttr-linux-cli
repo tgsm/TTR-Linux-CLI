@@ -12,7 +12,7 @@ import stat
 import time
 
 PATCH_MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
-CONTENT_MIRROR = 'https://s3.amazonaws.com/download.toontownrewritten.com/patches/'
+CONTENT_MIRROR = 'http://download.toontownrewritten.com/patches/'
 LOGIN_API = 'https://www.toontownrewritten.com/api/login?format=json'
 RELEASE_NOTES_API = 'https://www.toontownrewritten.com/api/releasenotes?format=json'
 HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
