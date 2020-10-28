@@ -113,9 +113,8 @@ def login():
     elif response["success"] == "partial":
         print("enter the ToonGuard code that was just emailed to you.")
         guard = input("> ")
-        params['appToken'] = guard
-        params['authToken'] = response['responseToken']
-        response = requests.post(LOGIN_API, params=params, headers=HEADERS).json()
+        auth_params = {'appToken': guard, 'authToken': response['responseToken']}
+        response = requests.post(LOGIN_API, params=auth_params, headers=HEADERS).json()
 
         if response["success"] == "true":
             launch(response["cookie"], response["gameserver"])
