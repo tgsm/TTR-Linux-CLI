@@ -99,7 +99,16 @@ def check_for_updates():
 def login():
     params = {'username': username, 'password': password}
 
-    response = requests.post(LOGIN_API, params=params, headers=HEADERS).json()
+    try:
+        response = requests.post(LOGIN_API, params=params, headers=HEADERS)
+        if response.status_code != 200:
+            print("error: could not connect to Toontown Rewritten's login API. (error {})".format(response.status_code))
+            os._exit(0)
+    except:
+        print("error: could not successfully connect to Toontown Rewritten's API.")
+        os._exit(0)
+
+    response = response.json()
 
     if response["success"] == "false":
         print("login failed: {}".format(response["banner"]))
