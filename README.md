@@ -1,5 +1,5 @@
 # TTR-Linux-CLI
-A launcher for Toontown Rewritten. The default one does not seem to like Linux...
+A command-line launcher for Toontown Rewritten.
 
 ## Usage
 Runs on Python 3.
