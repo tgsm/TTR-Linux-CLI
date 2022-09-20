@@ -15,6 +15,7 @@ PATCH_MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
 CONTENT_MIRROR = 'https://download.toontownrewritten.com/patches/'
 LOGIN_API = 'https://www.toontownrewritten.com/api/login?format=json'
 RELEASE_NOTES_API = 'https://www.toontownrewritten.com/api/releasenotes?format=json'
+STATUS_API = 'https://www.toontownrewritten.com/api/status?format=json'
 HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
 
 OPTION_ENABLE_LOGGING = False
@@ -180,7 +181,7 @@ if __name__ == "__main__":
             except IndexError:
                 print("error: -u/--username was passed, but no actual username was given.\n")
                 display_help()
-                os._exit(0)
+                os._exit(1)
 
         elif sys.argv[i] == "-p" or sys.argv[i] == "--password":
             try:
@@ -188,10 +189,15 @@ if __name__ == "__main__":
             except IndexError:
                 print("error: -p/--password was passed, but no actual password was given.\n")
                 display_help()
-                os._exit(0)
+                os._exit(1)
 
         elif sys.argv[i] == "-l" or sys.argv[i] == "--enable-logging":
             OPTION_ENABLE_LOGGING = True
+
+    game_status = requests.get(STATUS_API, params=None, headers=HEADERS).json()
+    if game_status["open"] != True:
+        print(game_status["banner"])
+        os._exit(1)
 
     check_for_updates()
     print("game is up to date!\n")
