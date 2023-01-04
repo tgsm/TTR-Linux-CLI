@@ -91,6 +91,16 @@ def update_file(filename, manifest):
             newfile.write(bz2.decompress(zipped.read()))
         os.remove(filename + ".bz2")
 
+def get_files_for_operating_system(manifest, operating_system):
+    os_name_dict = {'Windows': 'win64', 'Darwin': 'darwin', 'Linux': 'linux'}
+    files = []
+    for filename in manifest:
+        for system in manifest[filename]["only"]:
+            if system == os_name_dict[operating_system]:
+                files.append(filename)
+                break
+    return files
+
 def check_for_updates():
     print("checking for game updates...")
 
@@ -100,15 +110,7 @@ def check_for_updates():
     manifest = get_json_response_from_get_request(PATCH_MANIFEST)
 
     operating_system = platform.system()
-    if operating_system == 'Linux':
-        files = ['libopenal.so.1', 'phase_3.mf', 'phase_3.5.mf', 'phase_4.mf',
-                 'phase_5.mf', 'phase_5.5.mf', 'phase_6.mf', 'phase_7.mf',
-                 'phase_8.mf', 'phase_9.mf', 'phase_10.mf', 'phase_11.mf',
-                 'phase_12.mf', 'phase_13.mf', 'phase_14.mf', 'TTREngine',
-                 'TTRGame.vlt', 'winter_decorations.mf', 'winter_music.mf', 'winter_snow.mf']
-    else:
-        print("\n{} is unsupported :(".format(operating_system))
-        os._exit(0)
+    files = get_files_for_operating_system(manifest, operating_system)
 
     for file in files:
         update_file(file, manifest)
@@ -153,10 +155,18 @@ def launch(cookie, server):
     os.environ['TTR_PLAYCOOKIE'] = cookie
     os.environ['TTR_GAMESERVER'] = server
 
-    if OPTION_ENABLE_LOGGING:
-        subprocess.call('./TTREngine')
+    if platform.system() == 'Windows':
+        subprocess.call('TTREngine64.exe', stdout=subprocess.DEVNULL if not OPTION_ENABLE_LOGGING else None,
+                                           stderr=subprocess.STDOUT if not OPTION_ENABLE_LOGGING else None)
+    elif platform.system() == 'Darwin':
+        subprocess.call('./Toontown Rewritten', stdout=subprocess.DEVNULL if not OPTION_ENABLE_LOGGING else None,
+                                                stderr=subprocess.STDOUT if not OPTION_ENABLE_LOGGING else None)
+    elif platform.system() == 'Linux':
+        subprocess.call('./TTREngine', stdout=subprocess.DEVNULL if not OPTION_ENABLE_LOGGING else None,
+                                       stderr=subprocess.STDOUT if not OPTION_ENABLE_LOGGING else None)
     else:
-        subprocess.call('./TTREngine', stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        print("{} is unsupported, sorry :(".format(platform.system()))
+        os._exit(1)
 
     print("game closed, exiting the launcher...")
 
