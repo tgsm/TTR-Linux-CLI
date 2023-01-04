@@ -31,13 +31,32 @@ def display_help():
     print("")
     print("\t-h, --help            Displays this help message and exits.")
 
-def get_latest_game_version():
-    request = requests.get(RELEASE_NOTES_API, headers=HEADERS)
-    if request.status_code != 200:
-        # couldn't successfully connect to the API
-        return None
+def get_json_response_from_get_request(api_url, params=None, headers=HEADERS):
+    try:
+        response = requests.get(api_url, params=params, headers=headers)
+        if response.status_code != 200:
+            print("error: Could not connect to Toontown Rewritten's API. (error {})".format(response.status_code))
+            os._exit(1)
+    except:
+        print("error: Could not connect to Toontown Rewritten's API.")
+        os._exit(1)
 
-    release_list = request.json()
+    return response.json()
+
+def get_json_response_from_post_request(api_url, params=None, headers=HEADERS):
+    try:
+        response = requests.post(api_url, params=params, headers=headers)
+        if response.status_code != 200:
+            print("error: Could not connect to Toontown Rewritten's API. (error {})".format(response.status_code))
+            os._exit(1)
+    except:
+        print("error: Could not connect to Toontown Rewritten's API.")
+        os._exit(1)
+
+    return response.json()
+
+def get_latest_game_version():
+    release_list = get_json_response_from_get_request(RELEASE_NOTES_API)
     latest_version = release_list[0]["slug"]
     return latest_version
 
@@ -76,10 +95,9 @@ def check_for_updates():
     print("checking for game updates...")
 
     latest_version = get_latest_game_version()
-    if latest_version != None:
-        print("latest game version is {}".format(latest_version))
+    print("latest game version is {}".format(latest_version))
 
-    manifest = requests.get(PATCH_MANIFEST, headers=HEADERS).json()
+    manifest = get_json_response_from_get_request(PATCH_MANIFEST)
 
     operating_system = platform.system()
     if operating_system == 'Linux':
@@ -100,20 +118,11 @@ def check_for_updates():
 def login():
     params = {'username': username, 'password': password}
 
-    try:
-        response = requests.post(LOGIN_API, params=params, headers=HEADERS)
-        if response.status_code != 200:
-            print("error: could not connect to Toontown Rewritten's login API. (error {})".format(response.status_code))
-            os._exit(0)
-    except:
-        print("error: could not successfully connect to Toontown Rewritten's API.")
-        os._exit(0)
-
-    response = response.json()
+    response = get_json_response_from_post_request(LOGIN_API, params)
 
     if response["success"] == "false":
         print("login failed: {}".format(response["banner"]))
-        os._exit(0)
+        os._exit(1)
 
     elif response["success"] == "delayed":
         print("game entrance delay detected")
@@ -124,7 +133,7 @@ def login():
         print("enter the ToonGuard code that was just emailed to you.")
         guard = input("> ")
         auth_params = {'appToken': guard, 'authToken': response['responseToken']}
-        response = requests.post(LOGIN_API, params=auth_params, headers=HEADERS).json()
+        response = get_json_response_from_post_request(LOGIN_API, auth_params)
 
         if response["success"] == "true":
             launch(response["cookie"], response["gameserver"])
@@ -134,7 +143,7 @@ def login():
             delay(response["queueToken"])
         else:
             print("login failed: {}".format(response["banner"]))
-            os._exit(0)
+            os._exit(1)
 
     elif response["success"] == "true":
         launch(response["cookie"], response["gameserver"])
@@ -157,13 +166,13 @@ def delay(token):
     while delayed:
         time.sleep(2)
         print("still trying...")
-        response = requests.post(LOGIN_API, params=params, headers=HEADERS).json()
+        response = get_json_response_from_post_request(LOGIN_API, params)
         if response["success"] == "true":
             launch(response["cookie"], response["gameserver"])
             delayed = False
         else:
             print("launch failed: {}".format(response["banner"]))
-            os._exit(0)
+            os._exit(1)
 
 if __name__ == "__main__":
     print("ttr-linux-cli by reindeer-cafe, tgsm\n")
@@ -194,7 +203,7 @@ if __name__ == "__main__":
         elif sys.argv[i] == "-l" or sys.argv[i] == "--enable-logging":
             OPTION_ENABLE_LOGGING = True
 
-    game_status = requests.get(STATUS_API, params=None, headers=HEADERS).json()
+    game_status = get_json_response_from_get_request(STATUS_API)
     if game_status["open"] != True:
         print(game_status["banner"])
         os._exit(1)
