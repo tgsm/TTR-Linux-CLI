@@ -115,7 +115,8 @@ def check_for_updates():
     for file in files:
         update_file(file, manifest)
 
-    os.chmod('TTREngine', os.stat('TTREngine').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    if operating_system == 'Linux':
+        os.chmod('TTREngine', os.stat('TTREngine').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 def login():
     params = {'username': username, 'password': password}
