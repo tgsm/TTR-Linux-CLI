@@ -117,6 +117,8 @@ def check_for_updates():
 
     if operating_system == 'Linux':
         os.chmod('TTREngine', os.stat('TTREngine').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    elif operating_system == 'Darwin':
+        os.chmod('Toontown Rewritten', os.stat('Toontown Rewritten').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 def login():
     params = {'username': username, 'password': password}
