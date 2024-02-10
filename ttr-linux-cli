@@ -31,9 +31,9 @@ def display_help():
     print("")
     print("\t-h, --help            Displays this help message and exits.")
 
-def get_json_response_from_get_request(api_url, params=None, headers=HEADERS):
+def get_json_response_from_get_request(api_url, data=None, headers=HEADERS):
     try:
-        response = requests.get(api_url, params=params, headers=headers)
+        response = requests.get(api_url, data=data, headers=headers)
         if response.status_code != 200:
             print("error: Could not connect to Toontown Rewritten's API. (error {})".format(response.status_code))
             os._exit(1)
@@ -43,9 +43,9 @@ def get_json_response_from_get_request(api_url, params=None, headers=HEADERS):
 
     return response.json()
 
-def get_json_response_from_post_request(api_url, params=None, headers=HEADERS):
+def get_json_response_from_post_request(api_url, data=None, headers=HEADERS):
     try:
-        response = requests.post(api_url, params=params, headers=headers)
+        response = requests.post(api_url, data=data, headers=headers)
         if response.status_code != 200:
             print("error: Could not connect to Toontown Rewritten's API. (error {})".format(response.status_code))
             os._exit(1)
@@ -121,9 +121,9 @@ def check_for_updates():
         os.chmod('Toontown Rewritten', os.stat('Toontown Rewritten').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 def login():
-    params = {'username': username, 'password': password}
+    details = {'username': username, 'password': password}
 
-    response = get_json_response_from_post_request(LOGIN_API, params)
+    response = get_json_response_from_post_request(LOGIN_API, details)
 
     if response["success"] == "false":
         print("login failed: {}".format(response["banner"]))
@@ -137,8 +137,8 @@ def login():
     elif response["success"] == "partial":
         print("enter the ToonGuard code that was just emailed to you.")
         guard = input("> ")
-        auth_params = {'appToken': guard, 'authToken': response['responseToken']}
-        response = get_json_response_from_post_request(LOGIN_API, auth_params)
+        auth_details = {'appToken': guard, 'authToken': response['responseToken']}
+        response = get_json_response_from_post_request(LOGIN_API, auth_details)
 
         if response["success"] == "true":
             launch(response["cookie"], response["gameserver"])
@@ -174,12 +174,12 @@ def launch(cookie, server):
     print("game closed, exiting the launcher...")
 
 def delay(token):
-    params = {'username': username, 'password': password, 'queueToken': token}
+    details = {'username': username, 'password': password, 'queueToken': token}
     delayed = True
     while delayed:
         time.sleep(2)
         print("still trying...")
-        response = get_json_response_from_post_request(LOGIN_API, params)
+        response = get_json_response_from_post_request(LOGIN_API, details)
         if response["success"] == "true":
             launch(response["cookie"], response["gameserver"])
             delayed = False
