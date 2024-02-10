@@ -11,7 +11,7 @@ import subprocess
 import stat
 import time
 
-PATCH_MANIFEST = 'https://cdn.toontownrewritten.com/content/patchmanifest.txt'
+PATCH_MANIFEST_BASE = 'https://cdn.toontownrewritten.com'
 CONTENT_MIRROR = 'https://download.toontownrewritten.com/patches/'
 LOGIN_API = 'https://www.toontownrewritten.com/api/login?format=json'
 RELEASE_NOTES_API = 'https://www.toontownrewritten.com/api/releasenotes?format=json'
@@ -101,13 +101,13 @@ def get_files_for_operating_system(manifest, operating_system):
                 break
     return files
 
-def check_for_updates():
+def check_for_updates(manifest_path: str):
     print("checking for game updates...")
 
     latest_version = get_latest_game_version()
     print("latest game version is {}".format(latest_version))
 
-    manifest = get_json_response_from_get_request(PATCH_MANIFEST)
+    manifest = get_json_response_from_get_request(PATCH_MANIFEST_BASE + manifest_path)
 
     operating_system = platform.system()
     files = get_files_for_operating_system(manifest, operating_system)
@@ -119,6 +119,8 @@ def check_for_updates():
         os.chmod('TTREngine', os.stat('TTREngine').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     elif operating_system == 'Darwin':
         os.chmod('Toontown Rewritten', os.stat('Toontown Rewritten').st_mode | stat.S_IEXEC | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+    print("Game is up to date.")
 
 def login():
     details = {'username': username, 'password': password}
@@ -141,6 +143,7 @@ def login():
         response = get_json_response_from_post_request(LOGIN_API, auth_details)
 
         if response["success"] == "true":
+            check_for_updates(response["manifest"])
             launch(response["cookie"], response["gameserver"])
         elif response["success"] == "delayed":
             print("game entrance delay detected")
@@ -151,6 +154,7 @@ def login():
             os._exit(1)
 
     elif response["success"] == "true":
+        check_for_updates(response["manifest"])
         launch(response["cookie"], response["gameserver"])
 
 def launch(cookie, server):
@@ -220,9 +224,6 @@ if __name__ == "__main__":
     if game_status["open"] != True:
         print(game_status["banner"])
         os._exit(1)
-
-    check_for_updates()
-    print("game is up to date!\n")
 
     if not OPTION_USERNAME and not OPTION_PASSWORD:
         username = input("username: ")
